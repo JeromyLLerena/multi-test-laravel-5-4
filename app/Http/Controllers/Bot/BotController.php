@@ -29,6 +29,7 @@ class BotController extends Controller
 		$sender = $input['entry'][0]['messaging'][0]['sender']['id'];
 		$message = $input['entry'][0]['messaging'][0]['message']['text'];
 
+		$result = file_get_contents("https://graph.facebook.com/v2.6/" . $sender . "?access_token=" . $access_token);
 		/**
 		 * Some Basic rules to validate incoming messages
 		 */
@@ -40,18 +41,56 @@ class BotController extends Controller
 		    //if($result != '') {
 		    //    $message_to_reply = $result;
 		    //}
-		    $message_to_reply = Carbon::now()->toDateTimeString();
+		    //$message_to_reply = Carbon::now()->toDateTimeString();
+		    $dt = Carbon::now();
+		    $dt->timezone = 'America/Lima';
+		    $hours = $dt->hour < 13 ? $dt->hour : $dt->hour - 12;
+		    $minutes = $dt->minute;
+		    exec('env MAGICK_THREAD_LIMIT=1');
+		    $pwd = exec('pwd');
+		    $message_to_reply = 'Hola '. json_decode($result)->first_name. ', son las ' . $hours . ' y ' . $minutes;
+		    $command = 'echo "' . $message_to_reply . '" | ' . 'text2wave -o ' . $pwd .'/audios/hour_to_' . $sender  . '.mp3' . ' -eval "(voice_el_diphone)"';
+
+		    exec($command);
+		    //sleep(1);
+
+		    $message_body = [
+				'attachment' => [
+					'type' => 'audio',
+					'payload' => [
+						'url' => url('audios/hour_to_' . $sender . '.mp3')
+					]
+				]
+		    ];
 		} elseif(preg_match('[hola|hello|hi|holas]', strtolower($message))) {
-			$result = file_get_contents("https://graph.facebook.com/v2.6/" . $sender . "?access_token=" . $access_token);
 			//curl_setopt($ch, CURLOPT_GET, 1);
 			//$result = curl_exec($ch);
 			//curl_close($ch);
 			$message_to_reply = "Hola " . json_decode($result)->first_name . ", soy FootBot, un robot creado por Jeromy. Él está desarrollando en mí la capacidad de conocer los diferentes partidos de fútbol y notificárselos a los hinchas!!!";
+		    $message_body = [
+		    	'text' => $message_to_reply
+		    ];
+		} elseif(preg_match('[video]', strtolower($message))){
+			$message_body = [
+				'attachment' => [
+					'type' => 'video',
+					'payload' => [
+					/*
+						'url' => url('videos/SampleVideo_360x240_2mb.mp4'),
+						'is_reusable' => true
+						*/
+						'attachment_id' => 1435921046481265
+					]
+				]
+			];
 		} else {
 		    $message_to_reply = 'Huh! what do you mean?';
+		    $message_body = [
+		    	'text' => $message_to_reply
+		    ];
 		}
 		//print $message_to_reply;
-		print $message_to_reply;
+		//print $message_to_reply;
 
 		//API Url
 		$url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.$access_token;
@@ -61,14 +100,12 @@ class BotController extends Controller
 		$ch = curl_init($url);
 
 		//The JSON data.
-		$jsonData = '{
-		    "recipient":{
-		        "id":"'.$sender.'"
-		    },
-		    "message":{
-		        "text":"'.$message_to_reply.'"
-		    }
-		}';
+		$jsonData = json_encode([
+			'recipient' => [
+				'id' => $sender
+			],
+			'message' => $message_body
+		]);
 
 		//Encode the array into JSON.
 		$jsonDataEncoded = $jsonData;
