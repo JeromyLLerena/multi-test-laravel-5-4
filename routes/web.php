@@ -19,4 +19,5 @@ Route::get('/competitions', 'Football\FootballController@index')->name('competit
 Route::get('/competitions/{id}', 'Football\FootballController@show')->name('competitions.show');
 Route::get('/competitions/{id}/fixtures', 'Football\FootballController@fixtures')->name('competitions.fixtures');
 
+Route::get('/webhook', 'Bot\BotController@webhook');
 Route::post('/webhook', 'Bot\BotController@webhook');
