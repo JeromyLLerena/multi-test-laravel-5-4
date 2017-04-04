@@ -11,9 +11,9 @@
 	</div>
 	<!-- /.navbar-header -->
 
-	@include('layouts.admin.topbar')
+	@include('admin.layouts.topbar')
 	<!-- /.navbar-top-links -->
 
-	@include('layouts.admin.sidebar')
+	@include('admin.layouts.sidebar')
 	<!-- /.navbar-static-side -->
 </nav>

@@ -9,7 +9,7 @@
 
         <title>
         @section('title')
-            Virgin Mobile Admin
+            Multi test 5.4
         @show
         </title>
 
@@ -38,7 +38,7 @@
     <body>
     @show
         <div id="wrapper">
-            @include('layouts.admin.navigation')
+            @include('admin.layouts.navigation')
             <div id="page-wrapper" class="container-fluid">
                 @yield('content')
             </div>
